@@ -6,4 +6,6 @@
 
 def add_custom_config(_C):
     # Add your own customized configs.
+    _C.SAVE_FEATURES = True
+    _C.FEATNAME = "vid_feat"
     pass

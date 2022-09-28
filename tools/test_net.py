@@ -170,6 +170,7 @@ def test(cfg):
             slowfast/config/defaults.py
     """
     # Set up environment.
+    print(du.init_distributed_training.__code__.co_varnames)
     du.init_distributed_training(cfg)
     # Set random seed from configs.
     np.random.seed(cfg.RNG_SEED)

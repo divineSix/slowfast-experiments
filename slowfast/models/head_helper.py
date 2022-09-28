@@ -7,6 +7,8 @@ from functools import partial
 import torch
 import torch.nn as nn
 from detectron2.layers import ROIAlign
+import os
+import numpy as np
 
 import slowfast.utils.logging as logging
 from slowfast.models.attention import MultiScaleBlock
@@ -322,6 +324,22 @@ class ResNetBasicHead(nn.Module):
         x = torch.cat(pool_out, 1)
         # (N, C, T, H, W) -> (N, T, H, W, C).
         x = x.permute((0, 2, 3, 4, 1))
+
+        # Save Features
+        feat = x.clone().detach()
+        feat = feat.mean(3).mean(2).reshape(feat.shape[0], -1)
+
+        # if not os.path.exists(cfg.OUTPUT_DIR):
+        #     os.path.mkdirs(cfg.OUTPUT_DIR)
+        # filename = cfg.FEATNAME or "vid_feat"
+        # np.save(filename + ".npy", feat)
+
+        if cfg.SAVE_FEATURES:
+            if not os.path.exists(cfg.OUTPUT_DIR):
+                os.path.mkdirs(cfg.OUTPUT_DIR)
+            filename = cfg.FEATNAME or "feat"
+            np.save(filename + ".npy", feat)
+
         # Perform dropout.
         if hasattr(self, "dropout"):
             x = self.dropout(x)
