@@ -334,11 +334,11 @@ class ResNetBasicHead(nn.Module):
         # filename = cfg.FEATNAME or "vid_feat"
         # np.save(filename + ".npy", feat)
 
-        if cfg.SAVE_FEATURES:
-            if not os.path.exists(cfg.OUTPUT_DIR):
-                os.path.mkdirs(cfg.OUTPUT_DIR)
-            filename = cfg.FEATNAME or "feat"
-            np.save(filename + ".npy", feat)
+        # if cfg.SAVE_FEATURES:
+        #     if not os.path.exists(cfg.OUTPUT_DIR):
+        #         os.path.mkdirs(cfg.OUTPUT_DIR)
+        #     filename = cfg.FEATNAME or "feat"
+        #     np.save(filename + ".npy", feat)
 
         # Perform dropout.
         if hasattr(self, "dropout"):

@@ -199,9 +199,17 @@ class Meccano(torch.utils.data.Dataset):
             )
         label = self._labels[index]
         frames = utils.pack_pathway_output(self.cfg, frames)
-        return frames, label, index, {}
+        return frames, label, index, {}, {}
 
     def __len__(self):
+        """
+        Returns:
+            (int): the number of videos in the dataset.
+        """
+        return len(self._path_to_videos)
+
+    @property
+    def num_videos(self):
         """
         Returns:
             (int): the number of videos in the dataset.
