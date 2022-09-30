@@ -45,11 +45,15 @@ def perform_test(test_loader, model, test_meter, cfg, writer=None):
     # Enable eval mode.
     model.eval()
     test_meter.iter_tic()
+    
+    # Extracting SlowFast Features
+    features = None
+    print("No. of batches ", len(test_loader))
 
     for cur_iter, (inputs, labels, video_idx, time, meta) in enumerate(
         test_loader
     ):
-
+        
         if cfg.NUM_GPUS:
             # Transfer the data to the current GPU device.
             if isinstance(inputs, (list,)):
@@ -117,14 +121,32 @@ def perform_test(test_loader, model, test_meter, cfg, writer=None):
             preds = torch.sum(probs, 1)
         else:
             # Perform the forward pass.
-            preds = model(inputs)
+            print("Input Shapes [Slow & Fast paths]: ", inputs[1].shape, inputs[0].shape)
+            preds, feats = model(inputs)
+            
+            # Observing individual batch features
+            # feats = feats.cpu().detach().numpy()
+            # if not features:
+            #     features = feats
+            # else:
+            #     features = np.vstack((features, feats))
+        
         # Gather all the predictions across all the devices to perform ensemble.
+        # Gather the slowfast features as well across multiple GPUs. 
         if cfg.NUM_GPUS > 1:
-            preds, labels, video_idx = du.all_gather([preds, labels, video_idx])
+            preds, labels, video_idx, feats = du.all_gather([preds, labels, video_idx, feats])
         if cfg.NUM_GPUS:
             preds = preds.cpu()
             labels = labels.cpu()
             video_idx = video_idx.cpu()
+            feats = feats.cpu()
+            
+        print("Batch Features: ", feats.shape)
+        # Stack features across all batches. 
+        if features is not None:
+            features = np.vstack((features, feats))
+        else:
+            features = feats
 
         test_meter.iter_toc()
 
@@ -136,6 +158,9 @@ def perform_test(test_loader, model, test_meter, cfg, writer=None):
         test_meter.log_iter_stats(cur_iter)
 
         test_meter.iter_tic()
+
+    # Save the extracted features
+    np.save("./outputs/feats.npy", features)
 
     # Log epoch stats and print the final testing results.
     if not cfg.DETECTION.ENABLE:
@@ -170,7 +195,7 @@ def test(cfg):
             slowfast/config/defaults.py
     """
     # Set up environment.
-    print(du.init_distributed_training.__code__.co_varnames)
+    # print(du.init_distributed_training.__code__.co_varnames)
     du.init_distributed_training(cfg)
     # Set random seed from configs.
     np.random.seed(cfg.RNG_SEED)

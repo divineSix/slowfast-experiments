@@ -95,10 +95,7 @@ class Meccano(torch.utils.data.Dataset):
         self._frame_start = []
         self._frame_end = []
         with PathManager.open(path_to_file, "r") as f:
-            #print("splitlines", f.read().splitlines())
             for clip_idx, path_label in enumerate(f.read().splitlines()):
-                #print("clip_idx:", clip_idx)
-                #print("path_label:", path_label)
                 assert len(path_label.split(',')) == 5
                 video_path, action_label, action_noun, frame_start, frame_end  = path_label.split(',')
                 for idx in range(self._num_clips):
@@ -161,7 +158,8 @@ class Meccano(torch.utils.data.Dataset):
 
         # Recover frames
         frames = []
-        frame_count = int(self._frame_start[index][:-4]) #to obtain the number of the frame
+        # Note that -4 is used below because the self._frame_start[index] is a five digit string, like 00123
+        frame_count = int(self._frame_start[index][:-4]) # to obtain the number of the frame
         while(frame_count <= int(self._frame_end[index][:-4])):
             #rebuild original filename
             name_frame = str(frame_count)
@@ -178,7 +176,9 @@ class Meccano(torch.utils.data.Dataset):
             frames.append(torch.from_numpy(image))
             frame_count+=1
         frames= torch.stack(frames)
+
         #sampling frames
+        # TODO: Check if -4 is a possible issue when num_clips > 1, because repitions in the frame start and end have been observed. 
         frames = sampling.temporal_sampling(frames, int(self._frame_start[index][:-4]), int(self._frame_end[index][:-4]), self.cfg.DATA.NUM_FRAMES)
 
         # Perform color normalization.

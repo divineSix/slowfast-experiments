@@ -327,8 +327,9 @@ class ResNetBasicHead(nn.Module):
 
         # Save Features
         feat = x.clone().detach()
+        print("Pre-flattened Feature Shape: ", feat.shape)
         feat = feat.mean(3).mean(2).reshape(feat.shape[0], -1)
-
+        
         # if not os.path.exists(cfg.OUTPUT_DIR):
         #     os.path.mkdirs(cfg.OUTPUT_DIR)
         # filename = cfg.FEATNAME or "vid_feat"
@@ -374,7 +375,7 @@ class ResNetBasicHead(nn.Module):
         if time_projs:
             return [x_proj] + time_projs
         else:
-            return x_proj
+            return x_proj, feat
 
 
 class X3DHead(nn.Module):

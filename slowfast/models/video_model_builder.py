@@ -439,8 +439,8 @@ class SlowFast(nn.Module):
         if self.enable_detection:
             x = self.head(x, bboxes)
         else:
-            x = self.head(x)
-        return x
+            x, feat = self.head(x)
+        return x, feat
 
 
 @MODEL_REGISTRY.register()
